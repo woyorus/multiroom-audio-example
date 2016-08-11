@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+    <title>SyncSocket Multiroom Audio</title>
+</head>
+<body>
+    <center>
+        <button id="play-btn">Play</button>
+        <button id="stop-btn">Stop</button>
+    </center>
+    <center>
+        <p>Message: <b><span id="message">no message</span></b></p>
+    </center>
+</body>
+<script src="/syncsocket-client.js"></script>
+<script>
+    function setMessage(message) {
+        document.getElementById('message').innerHTML = message;
+    }
+
+    var client = syncsocket('http://localhost:6024');
+
+    client.on('connected', function() {
+        client.joinChannel('myAudioSystem', true)
+            .then(function(channel) {
+                channel.on('syncSuccessful', function() {
+                    channelReady(channel);
+                });
+            });
+    });
+
+    function channelReady(channel) {
+        setMessage("joined channel and synchronized!");
+
+        // Play button click handler
+        document.getElementById('play-btn').onclick = function() {
+            channel.publish('play');
+        };
+
+        var source;
+
+        function prepareToPlay() {
+            setMessage("preparing to play...");
+            var context;
+            try {
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                context = new AudioContext();
+            } catch (e) {
+                alert('Web Audio API is not supported in this browser');
+            }
+            source = context.createBufferSource();
+            var request = new XMLHttpRequest();
+            request.open('GET', 'https://dl.dropboxusercontent.com/u/752038/sample2.mp3', true);
+            request.responseType = 'arraybuffer';
+            request.onload = function() {
+                var audioData = request.response;
+                context.decodeAudioData(audioData, function(buffer) {
+                    source.buffer = buffer;
+                    source.connect(context.destination);
+                    channel.finalizeTransition();
+                }, function(err) {
+                    throw "Error decoding audio data: " + err;
+                });
+            };
+
+            channel.deferTransition();
+            request.send();
+        }
+
+        function doPlay() {
+            source.start(0);
+            setMessage("playing music");
+        }
+
+        channel.subscribe('play', prepareToPlay, doPlay);
+    }
+</script>
+</html>

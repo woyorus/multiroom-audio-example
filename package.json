@@ -1,0 +1,10 @@
+{
+  "name": "multiroom-audio-example",
+  "version": "0.0.1",
+  "description": "my first SyncSocket app",
+  "dependencies": {
+    "express": "4.14.0",
+    "syncsocket": "0.2.4",
+    "syncsocket-client": "0.2.5"
+  }
+}
