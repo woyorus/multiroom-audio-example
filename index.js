@@ -2,26 +2,21 @@ var app = require('express')();
 var http = require('http').Server(app);
 var SyncSocket = require('syncsocket');
 
-app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
-});
-
-app.get('/syncsocket-client.js', function (req, res) {
-    res.sendFile(__dirname + '/node_modules/syncsocket-client/syncsocket.js')
-});
+var srv = SyncSocket(http, { embeddedTimeserver: true });
+srv.createChannel('myAudioSystem');
 
 http.listen(3000, function(){
-  console.log('listening on *:3000');
+    console.log('listening on *:3000');
 });
 
-var syncsocketSrv = SyncSocket();
-syncsocketSrv.createChannel({ channelId: 'myAudioSystem' });
-syncsocketSrv.listen(6024);
+app.get('/', function(req, res){
+    res.sendFile(__dirname + '/index.html');
+});
 
-syncsocketSrv.on('connection', function () {
+srv.on('connection', function () {
     console.log('a new client connected');
 });
 
-syncsocketSrv.on('disconnect', function () {
+srv.on('disconnect', function () {
     console.log('client disconnected');
 });

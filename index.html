@@ -12,13 +12,13 @@
         <p>Message: <b><span id="message">no message</span></b></p>
     </center>
 </body>
-<script src="/syncsocket-client.js"></script>
+<script src="/syncsocket/syncsocket.js"></script>
 <script>
     function setMessage(message) {
         document.getElementById('message').innerHTML = message;
     }
 
-    var client = syncsocket('http://localhost:6024');
+    var client = syncsocket('http://localhost:3000/');
 
     client.on('connected', function() {
         client.joinChannel('myAudioSystem', true)
